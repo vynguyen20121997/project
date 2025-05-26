@@ -14,6 +14,7 @@ interface KpiCardProps {
   prefix?: string;
   suffix?: string;
   positive: boolean;
+  details?: string;
 }
 
 export function KpiCard({
@@ -25,7 +26,8 @@ export function KpiCard({
   icon,
   prefix = "",
   suffix = "%",
-  positive
+  positive,
+  details
 }: KpiCardProps) {
   return (
     <Card>
@@ -41,8 +43,18 @@ export function KpiCard({
             <div className="text-2xl font-bold">
               {prefix}{value}{suffix}
             </div>
-            <div className="flex items-center text-xs text-muted-foreground mt-1">
-              {trendText}
+            <div className="flex flex-col text-xs mt-1">
+              <span className={cn(
+                "font-medium",
+                positive ? "text-emerald-500" : "text-rose-500"
+              )}>
+                {trendText}
+              </span>
+              {details && (
+                <span className="text-muted-foreground">
+                  {details}
+                </span>
+              )}
             </div>
           </div>
           <div className="h-16 w-16">

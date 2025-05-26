@@ -1,0 +1,1 @@
+export const ipAddress = "http://3.27.156.160:5000"
