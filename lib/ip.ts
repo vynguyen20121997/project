@@ -1,1 +1,3 @@
-export const ipAddress = "http://3.27.156.160:5000"
+const ipAddressLocal = "http://3.104.110.113"
+const port = ':5000'
+export const ipAddress = ipAddressLocal + port

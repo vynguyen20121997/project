@@ -1,12 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface CircleProgressProps {
   value: number;
   color?: "success" | "danger" | "warning" | "info";
   size?: number;
   strokeWidth?: number;
+  showValue?: boolean;
+  unit?: string;
 }
 
 export function CircleProgress({
@@ -14,6 +17,8 @@ export function CircleProgress({
   color = "success",
   size = 40,
   strokeWidth = 4,
+  showValue = true,
+  unit = ""
 }: CircleProgressProps) {
   const radius = size / 2 - strokeWidth / 2;
   const circumference = 2 * Math.PI * radius;
@@ -37,7 +42,10 @@ export function CircleProgress({
           strokeWidth={strokeWidth}
           fill="none"
         />
-        <circle
+        <motion.circle
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset }}
+          transition={{ duration: 1, ease: "easeOut" }}
           className={cn(colorMap[color])}
           cx={size / 2}
           cy={size / 2}
@@ -46,13 +54,19 @@ export function CircleProgress({
           fill="none"
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-        {value}
-      </div>
+      {showValue && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="absolute inset-0 flex items-center justify-center text-xs font-medium"
+        >
+          {value}{unit}
+        </motion.div>
+      )}
     </div>
   );
 }

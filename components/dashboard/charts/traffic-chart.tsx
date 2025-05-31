@@ -12,8 +12,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart } from 'react-chartjs-2';
 import { useTheme } from 'next-themes';
+import { buildHumidityDataSet, buildTempDataSet, buildTimeDataSet } from '@/lib/utils';
 
 ChartJS.register(
   CategoryScale,
@@ -26,22 +27,25 @@ ChartJS.register(
   Legend
 );
 
-export function TrafficChart() {
+export function TrafficChart({humidity, temperature, time}: {humidity: number, temperature: number, time:string}) {
   const { theme } = useTheme();
+  let labels: string[] = [];
+  let tempDatasets : number[]= [];
+  let humidityDatasets : number[] = [];
   const [chartData, setChartData] = useState({
-    labels: ['00:00', '02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+    labels: labels,
     datasets: [
       {
         type: 'bar' as const,
         label: 'Temperature (°C)',
-        data: [22, 21, 21, 20, 22, 23, 24, 25, 24, 23, 22, 22],
+        data: tempDatasets,
         backgroundColor: '#60a5fa',
         barPercentage: 0.6,
       },
       {
         type: 'line' as const,
         label: 'Humidity (%)',
-        data: [45, 44, 44, 45, 46, 45, 43, 42, 44, 45, 45, 45],
+        data: humidityDatasets,
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
@@ -73,7 +77,7 @@ export function TrafficChart() {
           color: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
-          callback: (value: number) => `${value}°C`,
+          callback: (tickValue: string | number) => `${tickValue}°C`,
         },
         title: {
           display: true,
@@ -86,7 +90,7 @@ export function TrafficChart() {
           display: false,
         },
         ticks: {
-          callback: (value: number) => `${value}%`,
+          callback: (tickValue: string | number) => `${tickValue}%`,
         },
         title: {
           display: true,
@@ -106,31 +110,41 @@ export function TrafficChart() {
     },
   };
 
-  useEffect(() => {
-    const barColor = theme === 'dark' ? 'hsl(var(--chart-1))' : 'hsl(var(--chart-1))';
-    const lineColor = theme === 'dark' ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-2))';
-    const lineBgColor = theme === 'dark' ? 'hsla(var(--chart-2), 0.1)' : 'hsla(var(--chart-2), 0.1)';
-    
-    setChartData(prev => ({
-      ...prev,
-      datasets: [
-        {
-          ...prev.datasets[0],
-          backgroundColor: barColor,
-        },
-        {
-          ...prev.datasets[1],
-          borderColor: lineColor,
-          backgroundColor: lineBgColor,
-          pointBackgroundColor: lineColor,
-        }
-      ]
-    }));
-  }, [theme]);
+     useEffect(() => {
+      const barColor = theme === 'dark' ? 'hsl(var(--chart-1))' : 'hsl(var(--chart-1))';
+      const lineColor = theme === 'dark' ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-2))';
+      const lineBgColor = theme === 'dark' ? 'hsla(var(--chart-2), 0.1)' : 'hsla(var(--chart-2), 0.1)';
+
+      setChartData(prev => ({
+        labels: buildTimeDataSet(prev.labels, time),
+        datasets: prev.datasets.map((dataset, idx) => {
+          if (dataset.type === 'bar') {
+            const tempDataSet = buildTempDataSet(dataset.data as number[], temperature);
+            return {
+              ...dataset,
+              data: tempDataSet,
+              backgroundColor: barColor,
+            };
+          }
+          if (dataset.type === 'line') {
+            const humiDataSet = buildHumidityDataSet(dataset.data as number[], humidity)
+            return {
+              ...dataset,
+               data: humiDataSet,
+              borderColor: lineColor,
+              backgroundColor: lineBgColor,
+              pointBackgroundColor: lineColor,
+            };
+          }
+          return dataset;
+        }),
+      }));
+
+    }, [humidity, temperature, theme]);
 
   return (
     <div className="h-80">
-      <Bar options={options} data={chartData} />
+      <Chart type="bar" options={options} data={chartData} />
     </div>
   );
 }
